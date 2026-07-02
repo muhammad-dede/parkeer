@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
+import 'package:parkeer/core/utils/currency_util.dart';
+import 'package:parkeer/core/utils/date_time_util.dart';
 import 'package:parkeer/models/parking_transaction.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
 import 'package:parkeer/pages/printer/printer_page.dart';
@@ -16,12 +17,6 @@ class ParkingDetailPage extends StatefulWidget {
 
 class _ParkingDetailPageState extends State<ParkingDetailPage> {
   final _repository = ParkingTransactionRepository.instance;
-
-  final currency = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
 
   String formatDuration(DateTime entryTime, {DateTime? exitTime}) {
     final endTime = exitTime ?? DateTime.now();
@@ -341,19 +336,10 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
       padding: const EdgeInsets.all(4),
       child: Column(
         children: [
-          _infoRow(
-            "Masuk",
-            DateFormat(
-              'dd MMM yyyy HH:mm',
-              'id_ID',
-            ).format(transaction.entryTime),
-          ),
+          _infoRow("Masuk", DateTimeUtil.dateTimeSlash(transaction.entryTime)),
           if (!_isActive) ...[
             _divider(),
-            _infoRow(
-              "Keluar",
-              DateFormat('dd MMM yyyy HH:mm', 'id_ID').format(_exitTime),
-            ),
+            _infoRow("Keluar", DateTimeUtil.dateTimeSlash(_exitTime)),
           ],
           _divider(),
           _infoRow(
@@ -364,11 +350,14 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
             ),
           ),
           _divider(),
-          _infoRow("Tarif Minimum", currency.format(transaction.minimumCharge)),
+          _infoRow(
+            "Tarif Minimum",
+            CurrencyUtil.format(transaction.minimumCharge),
+          ),
           _divider(),
           _infoRow(
             "Maksimal Harian",
-            currency.format(transaction.maximumDailyCharge),
+            CurrencyUtil.format(transaction.maximumDailyCharge ?? 0),
           ),
         ],
       ),
@@ -394,7 +383,7 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            currency.format(_parkingFee),
+            CurrencyUtil.format(_parkingFee),
             style: TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.bold,

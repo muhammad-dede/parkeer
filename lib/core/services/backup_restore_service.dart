@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:intl/intl.dart';
 import 'package:parkeer/core/database/database_helper.dart';
+import 'package:parkeer/core/utils/date_time_util.dart';
 import 'package:share_plus/share_plus.dart';
 
 class BackupRestoreService {
@@ -21,7 +21,7 @@ class BackupRestoreService {
     await _dbHelper.close();
 
     try {
-      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+      final timestamp = DateTimeUtil.timestamp(DateTime.now());
       final backupName = 'parkeer_backup_$timestamp.db';
 
       // Salin ke file terpisah dengan nama rapi (jangan share file DB asli

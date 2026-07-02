@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
+import 'package:parkeer/core/utils/currency_util.dart';
+import 'package:parkeer/core/utils/date_time_util.dart';
 import 'package:parkeer/models/outlet.dart';
 import 'package:parkeer/models/parking_transaction.dart';
 import 'package:parkeer/repositories/outlet_repository.dart';
@@ -28,12 +29,6 @@ class _PrinterPageState extends State<PrinterPage> {
   ReceiptController? controller;
 
   final _repository = ParkingTransactionRepository.instance;
-
-  final currency = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
 
   String formatDuration(DateTime entryTime, {DateTime? exitTime}) {
     final endTime = exitTime ?? DateTime.now();
@@ -321,7 +316,7 @@ class _PrinterPageState extends State<PrinterPage> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text(
-              DateFormat("dd/MM/yyyy HH:mm").format(trx.entryTime),
+              DateTimeUtil.dateTimeSlash(trx.entryTime),
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ],
@@ -413,7 +408,7 @@ class _PrinterPageState extends State<PrinterPage> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text(
-              DateFormat("dd/MM/yyyy HH:mm").format(trx.entryTime),
+              DateTimeUtil.dateTimeSlash(trx.entryTime),
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ],
@@ -429,7 +424,7 @@ class _PrinterPageState extends State<PrinterPage> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text(
-              DateFormat("dd/MM/yyyy HH:mm").format(trx.exitTime!),
+              DateTimeUtil.dateTimeSlash(trx.exitTime!),
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ],
@@ -461,7 +456,7 @@ class _PrinterPageState extends State<PrinterPage> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text(
-              currency.format(trx.totalFee),
+              CurrencyUtil.format(trx.totalFee),
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ],

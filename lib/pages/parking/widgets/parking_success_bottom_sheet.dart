@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
+import 'package:parkeer/core/utils/date_time_util.dart';
 
 class ParkingSuccessBottomSheet extends StatelessWidget {
   const ParkingSuccessBottomSheet({
@@ -92,10 +92,7 @@ class ParkingSuccessBottomSheet extends StatelessWidget {
 
                                   _row(
                                     "Waktu Masuk",
-                                    DateFormat(
-                                      "dd MMM yyyy HH:mm",
-                                      "id_ID",
-                                    ).format(entryTime),
+                                    DateTimeUtil.dateTime(entryTime),
                                   ),
                                 ],
                               ),

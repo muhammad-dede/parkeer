@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
+import 'package:parkeer/core/utils/currency_util.dart';
+import 'package:parkeer/core/utils/date_time_util.dart';
 import 'package:parkeer/models/parking_transaction.dart';
 
 class HistoryCard extends StatelessWidget {
@@ -10,14 +11,6 @@ class HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currency = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
-
-    final dateFormat = DateFormat('dd/MM/yyyy • HH:mm', 'id_ID');
-
     final totalFee = transaction.totalFee;
 
     return Container(
@@ -64,7 +57,7 @@ class HistoryCard extends StatelessWidget {
                 const SizedBox(height: 3),
 
                 Text(
-                  "Masuk ${dateFormat.format(transaction.entryTime)}",
+                  "Masuk ${DateTimeUtil.dateTimeSlashDot(transaction.entryTime)}",
                   style: TextStyle(
                     color: Colors.grey.shade500,
                     fontSize: 12,
@@ -75,7 +68,7 @@ class HistoryCard extends StatelessWidget {
                 const SizedBox(height: 3),
 
                 Text(
-                  "Keluar ${transaction.exitTime != null ? dateFormat.format(transaction.exitTime!) : '-'}",
+                  "Keluar ${transaction.exitTime != null ? DateTimeUtil.dateTimeSlashDot(transaction.exitTime!) : '-'}",
                   style: TextStyle(
                     color: Colors.grey.shade500,
                     fontSize: 12,
@@ -87,7 +80,7 @@ class HistoryCard extends StatelessWidget {
           ),
 
           Text(
-            transaction.status == "IN" ? "" : currency.format(totalFee),
+            transaction.status == "IN" ? "" : CurrencyUtil.format(totalFee),
             style: TextStyle(
               color: AppColors.primary,
               fontWeight: FontWeight.bold,

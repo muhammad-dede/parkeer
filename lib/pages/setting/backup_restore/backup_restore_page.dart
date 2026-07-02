@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
 import 'package:parkeer/core/services/backup_restore_service.dart';
 
@@ -106,10 +105,6 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
         setState(() => _loadingRestore = false);
       }
     }
-  }
-
-  String formatDate(DateTime date) {
-    return DateFormat("dd MMM yyyy HH:mm").format(date);
   }
 
   @override

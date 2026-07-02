@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
+import 'package:parkeer/core/utils/currency_util.dart';
+import 'package:parkeer/core/utils/date_time_util.dart';
 import 'package:parkeer/models/parking_transaction.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
 import 'package:parkeer/pages/printer/printer_page.dart';
@@ -16,12 +17,6 @@ class HistoryDetailPage extends StatefulWidget {
 
 class _HistoryDetailPageState extends State<HistoryDetailPage> {
   final _repository = ParkingTransactionRepository.instance;
-
-  final currency = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
 
   String formatDuration(DateTime entryTime, {DateTime? exitTime}) {
     final endTime = exitTime ?? DateTime.now();
@@ -198,19 +193,13 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
           _divider(),
           _infoRow(
             "Masuk",
-            DateFormat(
-              'dd MMM yyyy HH:mm',
-              'id_ID',
-            ).format(transaction.entryTime),
+            DateTimeUtil.dateTimeSlashDot(transaction.entryTime),
           ),
           _infoRow(
             "Keluar",
             transaction.exitTime == null
                 ? '-'
-                : DateFormat(
-                    'dd MMM yyyy HH:mm',
-                    'id_ID',
-                  ).format(transaction.exitTime!),
+                : DateTimeUtil.dateTimeSlashDot(transaction.exitTime!),
           ),
           _infoRow(
             "Durasi",
@@ -219,10 +208,13 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
               exitTime: transaction.exitTime,
             ),
           ),
-          _infoRow("Tarif Minimum", currency.format(transaction.minimumCharge)),
+          _infoRow(
+            "Tarif Minimum",
+            CurrencyUtil.format(transaction.minimumCharge),
+          ),
           _infoRow(
             "Maksimal Harian",
-            currency.format(transaction.maximumDailyCharge),
+            CurrencyUtil.format(transaction.maximumDailyCharge ?? 0),
           ),
           _divider(),
         ],
@@ -248,8 +240,8 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
           ),
           Text(
             transaction.totalFee > 0
-                ? currency.format(transaction.totalFee)
-                : currency.format(0),
+                ? CurrencyUtil.format(transaction.totalFee)
+                : CurrencyUtil.format(0),
             textAlign: TextAlign.end,
             style: const TextStyle(
               fontWeight: FontWeight.bold,

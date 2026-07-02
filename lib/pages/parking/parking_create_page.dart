@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
+import 'package:parkeer/core/utils/currency_util.dart';
+import 'package:parkeer/core/utils/date_time_util.dart';
 import 'package:parkeer/models/parking_rate.dart';
 import 'package:parkeer/models/parking_rate_detail.dart';
 import 'package:parkeer/models/parking_transaction.dart';
@@ -33,12 +35,6 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
   late DateTime entryTime;
 
   late String ticketNumber;
-
-  final currency = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
 
   String? _validatePlateNumber(String? value) {
     if (value == null || value.trim().isEmpty) {
@@ -343,7 +339,7 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
                   style: TextStyle(fontSize: 14),
                 ),
                 trailing: Text(
-                  DateFormat('dd MMMM yyyy, HH:mm', 'id_ID').format(entryTime),
+                  DateTimeUtil.dateTimeSlashDot(entryTime),
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -359,7 +355,9 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
                   style: TextStyle(fontSize: 14),
                 ),
                 trailing: Text(
-                  _rate == null ? "-" : currency.format(_rate!.minimumCharge),
+                  _rate == null
+                      ? "-"
+                      : CurrencyUtil.format(_rate!.minimumCharge),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -380,7 +378,7 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
                 trailing: Text(
                   _rate?.maximumDailyCharge == null
                       ? "-"
-                      : currency.format(_rate!.maximumDailyCharge),
+                      : CurrencyUtil.format(_rate!.maximumDailyCharge ?? 0),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,

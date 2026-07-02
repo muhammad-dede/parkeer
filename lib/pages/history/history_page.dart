@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:parkeer/core/events/app_event_bus.dart';
 import 'package:parkeer/core/events/transaction_changed_event.dart';
+import 'package:parkeer/core/utils/date_time_util.dart';
 import 'package:parkeer/models/parking_transaction.dart';
 import 'package:parkeer/pages/history/history_detail_page.dart';
 import 'package:parkeer/pages/history/widgets/history_card.dart';
@@ -60,14 +61,14 @@ class _HistoryPageState extends State<HistoryPage> {
     final current = DateTime(d.year, d.month, d.day);
 
     if (current == today) {
-      return "Hari Ini, ${DateFormat('dd MMMM yyyy', 'id').format(d)}";
+      return "Hari Ini, ${DateTimeUtil.date(d)}";
     }
 
     if (current == yesterday) {
-      return "Kemarin, ${DateFormat('dd MMMM yyyy', 'id').format(d)}";
+      return "Kemarin, ${DateTimeUtil.date(d)}";
     }
 
-    return DateFormat('dd MMMM yyyy', 'id').format(d);
+    return DateTimeUtil.date(d);
   }
 
   bool _isSameDate(DateTime a, DateTime b) {

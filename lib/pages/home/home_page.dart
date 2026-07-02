@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:parkeer/core/events/app_event_bus.dart';
 import 'package:parkeer/core/events/transaction_changed_event.dart';
+import 'package:parkeer/core/utils/currency_util.dart';
 import 'package:parkeer/models/dashboard_summary.dart';
 import 'package:parkeer/pages/home/widgets/quick_menu.dart';
 import 'package:parkeer/pages/home/widgets/dashboard_card.dart';
@@ -24,20 +24,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final StreamSubscription _subscription;
 
-  final repository = ParkingTransactionRepository.instance;
+  final _repository = ParkingTransactionRepository.instance;
 
-  DashboardSummary? summary;
+  DashboardSummary? _summary;
 
   bool _loading = true;
 
-  final currency = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
-
   Future<void> _loadDashboard() async {
-    summary = await repository.getDashboardSummary();
+    _summary = await _repository.getDashboardSummary();
     setState(() {
       _loading = false;
     });
@@ -92,14 +86,16 @@ class _HomePageState extends State<HomePage> {
                     ),
                     child: Column(
                       children: [
-                        DashboardCard(parkingCount: summary?.parkingCount ?? 0),
+                        DashboardCard(
+                          parkingCount: _summary?.parkingCount ?? 0,
+                        ),
 
                         const SizedBox(height: 16),
 
                         StatisticCard(
-                          vehicleToday: summary?.vehicleInToday ?? 0,
-                          incomeToday: currency.format(
-                            summary?.incomeToday ?? 0,
+                          vehicleToday: _summary?.vehicleInToday ?? 0,
+                          incomeToday: CurrencyUtil.format(
+                            _summary?.incomeToday ?? 0,
                           ),
                         ),
 
@@ -113,12 +109,14 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(height: 24),
 
                         SummaryCard(
-                          incomeToday: currency.format(
-                            summary?.incomeToday ?? 0,
+                          incomeToday: CurrencyUtil.format(
+                            _summary?.incomeToday ?? 0,
                           ),
-                          incomeWeek: currency.format(summary?.incomeWeek ?? 0),
-                          incomeMonth: currency.format(
-                            summary?.incomeMonth ?? 0,
+                          incomeWeek: CurrencyUtil.format(
+                            _summary?.incomeWeek ?? 0,
+                          ),
+                          incomeMonth: CurrencyUtil.format(
+                            _summary?.incomeMonth ?? 0,
                           ),
                         ),
                       ],

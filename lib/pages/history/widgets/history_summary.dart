@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:parkeer/core/utils/currency_util.dart';
 
 class HistorySummary extends StatelessWidget {
   const HistorySummary({
@@ -27,11 +27,7 @@ class HistorySummary extends StatelessWidget {
           Expanded(
             child: _statCard(
               title: "Pendapatan",
-              value: NumberFormat.currency(
-                locale: "id",
-                symbol: "Rp ",
-                decimalDigits: 0,
-              ).format(totalIncome),
+              value: CurrencyUtil.format(totalIncome),
             ),
           ),
         ],
