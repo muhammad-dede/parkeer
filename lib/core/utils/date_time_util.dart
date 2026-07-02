@@ -26,7 +26,7 @@ class DateTimeUtil {
     _locale,
   );
 
-  static final DateFormat _timestamp = DateFormat('yyyyMMdd_HHmmss');
+  static final DateFormat _timestamp = DateFormat('yyyyMMddHHmmss');
 
   static String date(DateTime dateTime) {
     return _date.format(dateTime);

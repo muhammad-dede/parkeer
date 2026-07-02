@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
 import 'package:parkeer/core/utils/currency_util.dart';
 import 'package:parkeer/core/utils/date_time_util.dart';
@@ -58,7 +57,7 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
 
     entryTime = DateTime.now();
 
-    ticketNumber = 'PKR${DateFormat('yyyyMMddHHmmss').format(entryTime)}';
+    ticketNumber = 'PKR${DateTimeUtil.timestamp(entryTime)}';
 
     _loadRate();
   }
