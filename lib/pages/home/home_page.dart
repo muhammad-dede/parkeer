@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:parkeer/core/events/app_event_bus.dart';
+import 'package:parkeer/core/events/transaction_changed_event.dart';
 import 'package:parkeer/models/dashboard_summary.dart';
 import 'package:parkeer/pages/home/widgets/quick_menu.dart';
 import 'package:parkeer/pages/home/widgets/dashboard_card.dart';
@@ -18,6 +22,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late final StreamSubscription _subscription;
+
   final repository = ParkingTransactionRepository.instance;
 
   DashboardSummary? summary;
@@ -30,22 +36,28 @@ class _HomePageState extends State<HomePage> {
     decimalDigits: 0,
   );
 
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
+  Future<void> _loadDashboard() async {
     summary = await repository.getDashboardSummary();
-
     setState(() {
       _loading = false;
     });
   }
 
-  Future<void> _refresh() async {
-    await _load();
+  @override
+  void initState() {
+    super.initState();
+    _loadDashboard();
+    _subscription = AppEventBus.instance.on<TransactionChangedEvent>().listen((
+      _,
+    ) {
+      _loadDashboard();
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
   }
 
   @override
@@ -70,7 +82,7 @@ class _HomePageState extends State<HomePage> {
         child: _loading
             ? const Center(child: CircularProgressIndicator())
             : RefreshIndicator(
-                onRefresh: _refresh,
+                onRefresh: _loadDashboard,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Padding(
@@ -95,7 +107,7 @@ class _HomePageState extends State<HomePage> {
 
                         QuickMenu(
                           onChangeTab: widget.onChangeTab,
-                          onRefreshHome: _load,
+                          onRefreshHome: _loadDashboard,
                         ),
 
                         const SizedBox(height: 24),

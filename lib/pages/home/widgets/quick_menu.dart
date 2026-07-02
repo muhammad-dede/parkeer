@@ -34,15 +34,11 @@ class QuickMenu extends StatelessWidget {
             _menuItem(
               Icons.login,
               "Masuk",
-              onTap: () async {
-                final result = await Navigator.push<bool>(
+              onTap: () {
+                Navigator.push<bool>(
                   context,
                   MaterialPageRoute(builder: (_) => const ParkingCreatePage()),
                 );
-
-                if (result == true) {
-                  await onRefreshHome();
-                }
               },
             ),
             _menuItem(

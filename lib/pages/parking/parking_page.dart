@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:parkeer/core/events/app_event_bus.dart';
+import 'package:parkeer/core/events/transaction_changed_event.dart';
 import 'package:parkeer/models/parking_transaction.dart';
 import 'package:parkeer/pages/parking/parking_create_page.dart';
 import 'package:parkeer/pages/parking/parking_detail_page.dart';
@@ -18,6 +20,8 @@ class ParkingPage extends StatefulWidget {
 }
 
 class _ParkingPageState extends State<ParkingPage> {
+  late final StreamSubscription _subscription;
+
   final ScrollController _scrollController = ScrollController();
 
   final _repository = ParkingTransactionRepository.instance;
@@ -51,12 +55,19 @@ class _ParkingPageState extends State<ParkingPage> {
         _loadTransactions();
       }
     });
+
+    _subscription = AppEventBus.instance.on<TransactionChangedEvent>().listen((
+      _,
+    ) {
+      _loadTransactions(reset: true);
+    });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     _debounce?.cancel();
+    _subscription.cancel();
     super.dispose();
   }
 
@@ -109,12 +120,11 @@ class _ParkingPageState extends State<ParkingPage> {
       appBar: AppBar(title: const Text('Daftar Parkir')),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: ParkingFab(
-        onPressed: () async {
-          await Navigator.push(
+        onPressed: () {
+          Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => ParkingCreatePage()),
           );
-          _refresh();
         },
       ),
 
@@ -173,8 +183,8 @@ class _ParkingPageState extends State<ParkingPage> {
                         final transaction = _transactions[index];
 
                         return InkWell(
-                          onTap: () async {
-                            final result = await Navigator.push(
+                          onTap: () {
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => ParkingDetailPage(
@@ -182,10 +192,6 @@ class _ParkingPageState extends State<ParkingPage> {
                                 ),
                               ),
                             );
-
-                            if (result == true) {
-                              await _refresh();
-                            }
                           },
                           child: ParkingCard(transaction: transaction),
                         );

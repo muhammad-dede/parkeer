@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:parkeer/core/events/app_event_bus.dart';
+import 'package:parkeer/core/events/transaction_changed_event.dart';
 import 'package:parkeer/models/parking_transaction.dart';
 import 'package:parkeer/pages/history/history_detail_page.dart';
 import 'package:parkeer/pages/history/widgets/history_card.dart';
@@ -17,6 +19,8 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
+  late final StreamSubscription _subscription;
+
   final ScrollController _scrollController = ScrollController();
 
   final _repository = ParkingTransactionRepository.instance;
@@ -85,12 +89,19 @@ class _HistoryPageState extends State<HistoryPage> {
         _loadHistories();
       }
     });
+
+    _subscription = AppEventBus.instance.on<TransactionChangedEvent>().listen((
+      _,
+    ) {
+      _loadHistories(reset: true);
+    });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     _debounce?.cancel();
+    _subscription.cancel();
     super.dispose();
   }
 
@@ -352,8 +363,8 @@ class _HistoryPageState extends State<HistoryPage> {
                               ),
 
                             InkWell(
-                              onTap: () async {
-                                final result = await Navigator.push(
+                              onTap: () {
+                                Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => HistoryDetailPage(
@@ -361,10 +372,6 @@ class _HistoryPageState extends State<HistoryPage> {
                                     ),
                                   ),
                                 );
-
-                                if (result == true) {
-                                  await _refresh();
-                                }
                               },
                               child: HistoryCard(transaction: history),
                             ),

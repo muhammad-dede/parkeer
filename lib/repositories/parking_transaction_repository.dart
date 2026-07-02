@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:parkeer/core/database/database_helper.dart';
+import 'package:parkeer/core/events/app_event_bus.dart';
+import 'package:parkeer/core/events/transaction_changed_event.dart';
 import 'package:parkeer/models/dashboard_summary.dart';
 import 'package:parkeer/models/parking_rate.dart';
 import 'package:parkeer/models/parking_rate_detail.dart';
@@ -13,6 +15,101 @@ class ParkingTransactionRepository {
       ParkingTransactionRepository._();
 
   final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
+
+  Future<ParkingRate?> getActiveRate(String vehicleTypeCode) async {
+    final db = await _databaseHelper.database;
+
+    final result = await db.query(
+      'parking_rates',
+      where: 'vehicle_type_code = ? AND is_active = ?',
+      whereArgs: [vehicleTypeCode, 1],
+      limit: 1,
+    );
+
+    if (result.isEmpty) {
+      return null;
+    }
+
+    return ParkingRate.fromMap(result.first);
+  }
+
+  Future<List<ParkingRateDetail>> getRateDetails(int parkingRateId) async {
+    final db = await _databaseHelper.database;
+
+    final result = await db.query(
+      'parking_rate_details',
+      where: 'parking_rate_id = ?',
+      whereArgs: [parkingRateId],
+      orderBy: 'from_minute ASC',
+    );
+
+    return result.map((e) => ParkingRateDetail.fromMap(e)).toList();
+  }
+
+  Future<int> createTransaction(ParkingTransaction transaction) async {
+    final db = await _databaseHelper.database;
+
+    final id = await db.insert('parking_transactions', transaction.toMap());
+
+    AppEventBus.instance.fire(TransactionChangedEvent());
+
+    return id;
+  }
+
+  Future<void> createTransactionDetails(
+    List<ParkingTransactionDetail> details,
+  ) async {
+    final db = await _databaseHelper.database;
+
+    final batch = db.batch();
+
+    for (final detail in details) {
+      batch.insert('parking_transaction_details', detail.toMap());
+    }
+
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> completeTransaction({
+    required int transactionId,
+    required DateTime exitTime,
+    required int totalFee,
+  }) async {
+    final db = await _databaseHelper.database;
+
+    await db.update(
+      'parking_transactions',
+      {
+        'status': 'OUT',
+        'exit_time': exitTime.toIso8601String(),
+        'total_fee': totalFee,
+      },
+      where: 'id = ?',
+      whereArgs: [transactionId],
+    );
+
+    AppEventBus.instance.fire(TransactionChangedEvent());
+  }
+
+  Future<void> deleteTransaction(int transactionId) async {
+    final db = await _databaseHelper.database;
+
+    await db.transaction((txn) async {
+      await txn.delete(
+        'parking_transaction_details',
+        where: 'parking_transaction_id = ?',
+        whereArgs: [transactionId],
+      );
+
+      await txn.delete(
+        'parking_transactions',
+        where: 'id = ?',
+        whereArgs: [transactionId],
+      );
+    });
+
+    AppEventBus.instance.fire(TransactionChangedEvent());
+  }
 
   Future<List<ParkingTransaction>> getActiveTransactions({
     String keyword = '',
@@ -48,36 +145,16 @@ class ParkingTransactionRepository {
     return result.map((e) => ParkingTransaction.fromMap(e)).toList();
   }
 
-  /// Ambil tarif aktif berdasarkan jenis kendaraan
-  Future<ParkingRate?> getActiveRate(String vehicleTypeCode) async {
+  Future<ParkingTransaction?> getTransactionById(int id) async {
     final db = await _databaseHelper.database;
-
     final result = await db.query(
-      'parking_rates',
-      where: 'vehicle_type_code = ? AND is_active = ?',
-      whereArgs: [vehicleTypeCode, 1],
+      'parking_transactions',
+      where: 'id = ?',
+      whereArgs: [id],
       limit: 1,
     );
-
-    if (result.isEmpty) {
-      return null;
-    }
-
-    return ParkingRate.fromMap(result.first);
-  }
-
-  /// Ambil detail tarif
-  Future<List<ParkingRateDetail>> getRateDetails(int parkingRateId) async {
-    final db = await _databaseHelper.database;
-
-    final result = await db.query(
-      'parking_rate_details',
-      where: 'parking_rate_id = ?',
-      whereArgs: [parkingRateId],
-      orderBy: 'from_minute ASC',
-    );
-
-    return result.map((e) => ParkingRateDetail.fromMap(e)).toList();
+    if (result.isEmpty) return null;
+    return ParkingTransaction.fromMap(result.first);
   }
 
   Future<ParkingTransaction?> getTransactionByTicketNumber(
@@ -97,76 +174,6 @@ class ParkingTransactionRepository {
     }
 
     return ParkingTransaction.fromMap(result.first);
-  }
-
-  /// Simpan transaksi parkir
-  Future<int> createTransaction(ParkingTransaction transaction) async {
-    final db = await _databaseHelper.database;
-
-    return db.insert('parking_transactions', transaction.toMap());
-  }
-
-  /// Simpan snapshot detail tarif transaksi
-  Future<void> createTransactionDetails(
-    List<ParkingTransactionDetail> details,
-  ) async {
-    final db = await _databaseHelper.database;
-
-    final batch = db.batch();
-
-    for (final detail in details) {
-      batch.insert('parking_transaction_details', detail.toMap());
-    }
-
-    await batch.commit(noResult: true);
-  }
-
-  Future<ParkingTransaction?> getTransactionById(int id) async {
-    final db = await _databaseHelper.database;
-    final result = await db.query(
-      'parking_transactions',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-    if (result.isEmpty) return null;
-    return ParkingTransaction.fromMap(result.first);
-  }
-
-  Future<void> completeTransaction({
-    required int transactionId,
-    required DateTime exitTime,
-    required int totalFee,
-  }) async {
-    final db = await _databaseHelper.database;
-    await db.update(
-      'parking_transactions',
-      {
-        'status': 'OUT',
-        'exit_time': exitTime.toIso8601String(),
-        'total_fee': totalFee,
-      },
-      where: 'id = ?',
-      whereArgs: [transactionId],
-    );
-  }
-
-  Future<void> deleteTransaction(int transactionId) async {
-    final db = await _databaseHelper.database;
-
-    await db.transaction((txn) async {
-      await txn.delete(
-        'parking_transaction_details',
-        where: 'parking_transaction_id = ?',
-        whereArgs: [transactionId],
-      );
-
-      await txn.delete(
-        'parking_transactions',
-        where: 'id = ?',
-        whereArgs: [transactionId],
-      );
-    });
   }
 
   Future<double> calculateParkingFee({
@@ -241,7 +248,7 @@ class ParkingTransactionRepository {
     return total;
   }
 
-  // Dashboard
+  // DASHBOARD //
   Future<DashboardSummary> getDashboardSummary() async {
     final db = await _databaseHelper.database;
 
