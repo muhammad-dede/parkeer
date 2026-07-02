@@ -336,10 +336,13 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
       padding: const EdgeInsets.all(4),
       child: Column(
         children: [
-          _infoRow("Masuk", DateTimeUtil.dateTimeSlash(transaction.entryTime)),
+          _infoRow(
+            "Masuk",
+            DateTimeUtil.dateTimeSlashDot(transaction.entryTime),
+          ),
           if (!_isActive) ...[
             _divider(),
-            _infoRow("Keluar", DateTimeUtil.dateTimeSlash(_exitTime)),
+            _infoRow("Keluar", DateTimeUtil.dateTimeSlashDot(_exitTime)),
           ],
           _divider(),
           _infoRow(

@@ -92,7 +92,7 @@ class ParkingSuccessBottomSheet extends StatelessWidget {
 
                                   _row(
                                     "Waktu Masuk",
-                                    DateTimeUtil.dateTime(entryTime),
+                                    DateTimeUtil.dateTimeSlashDot(entryTime),
                                   ),
                                 ],
                               ),
