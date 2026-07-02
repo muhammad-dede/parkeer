@@ -9,7 +9,7 @@ import 'package:parkeer/pages/home/widgets/quick_menu.dart';
 import 'package:parkeer/pages/home/widgets/dashboard_card.dart';
 import 'package:parkeer/pages/home/widgets/statistic_card.dart';
 import 'package:parkeer/pages/home/widgets/summary_card.dart';
-import 'package:parkeer/pages/scan_qr/scan_qr_page.dart';
+import 'package:parkeer/pages/qr_scan/qr_scan_page.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
 
 class HomePage extends StatefulWidget {
@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ScanQrPage()),
+                MaterialPageRoute(builder: (context) => const QrScanPage()),
               );
             },
             icon: const Icon(Icons.qr_code_scanner_outlined),

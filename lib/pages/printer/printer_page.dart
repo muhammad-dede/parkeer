@@ -9,16 +9,16 @@ import 'package:flutter_bluetooth_printer/flutter_bluetooth_printer.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class PrintNotaPage extends StatefulWidget {
-  const PrintNotaPage({super.key, required this.transactionId});
+class PrinterPage extends StatefulWidget {
+  const PrinterPage({super.key, required this.transactionId});
 
   final int transactionId;
 
   @override
-  State<PrintNotaPage> createState() => _PrintNotaPageState();
+  State<PrinterPage> createState() => _PrinterPageState();
 }
 
-class _PrintNotaPageState extends State<PrintNotaPage> {
+class _PrinterPageState extends State<PrinterPage> {
   static const _lastPrinterAddressKey = 'last_printer_address';
 
   final _outletRepository = OutletRepository();

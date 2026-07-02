@@ -5,14 +5,14 @@ import 'package:parkeer/pages/history/history_detail_page.dart';
 import 'package:parkeer/pages/parking/parking_detail_page.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
 
-class ScanQrPage extends StatefulWidget {
-  const ScanQrPage({super.key});
+class QrScanPage extends StatefulWidget {
+  const QrScanPage({super.key});
 
   @override
-  State<ScanQrPage> createState() => _ScanQrPageState();
+  State<QrScanPage> createState() => _QrScanPageState();
 }
 
-class _ScanQrPageState extends State<ScanQrPage> {
+class _QrScanPageState extends State<QrScanPage> {
   final MobileScannerController _controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
     facing: CameraFacing.back,

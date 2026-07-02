@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
 import 'package:parkeer/models/parking_transaction.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
-import 'package:parkeer/pages/print_nota/print_nota_page.dart';
+import 'package:parkeer/pages/printer/printer_page.dart';
 
 class ParkingDetailPage extends StatefulWidget {
   const ParkingDetailPage({super.key, required this.transactionId});
@@ -220,9 +220,8 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => PrintNotaPage(
-                            transactionId: widget.transactionId,
-                          ),
+                          builder: (_) =>
+                              PrinterPage(transactionId: widget.transactionId),
                         ),
                       );
                     },

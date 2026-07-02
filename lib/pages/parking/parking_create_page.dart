@@ -8,7 +8,7 @@ import 'package:parkeer/models/parking_transaction_detail.dart';
 import 'package:parkeer/pages/parking/parking_detail_page.dart';
 import 'package:parkeer/pages/parking/widgets/parking_success_bottom_sheet.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
-import 'package:parkeer/pages/print_nota/print_nota_page.dart';
+import 'package:parkeer/pages/printer/printer_page.dart';
 
 class ParkingCreatePage extends StatefulWidget {
   const ParkingCreatePage({super.key});
@@ -158,7 +158,7 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
               sheetNavigator.pop();
               final result = await navigator.push<bool>(
                 MaterialPageRoute(
-                  builder: (_) => PrintNotaPage(transactionId: transactionId),
+                  builder: (_) => PrinterPage(transactionId: transactionId),
                 ),
               );
               if (!mounted) return;

@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
 import 'package:parkeer/models/parking_transaction.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
-import 'package:parkeer/pages/print_nota/print_nota_page.dart';
+import 'package:parkeer/pages/printer/printer_page.dart';
 
 class HistoryDetailPage extends StatefulWidget {
   const HistoryDetailPage({super.key, required this.transactionId});
@@ -117,7 +117,7 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            PrintNotaPage(transactionId: widget.transactionId),
+                            PrinterPage(transactionId: widget.transactionId),
                       ),
                     );
                   },

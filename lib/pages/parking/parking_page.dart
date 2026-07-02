@@ -8,7 +8,7 @@ import 'package:parkeer/pages/parking/parking_detail_page.dart';
 import 'package:parkeer/pages/parking/widgets/parking_card.dart';
 import 'package:parkeer/pages/parking/widgets/parking_fab.dart';
 import 'package:parkeer/pages/parking/widgets/parking_search.dart';
-import 'package:parkeer/pages/scan_qr/scan_qr_page.dart';
+import 'package:parkeer/pages/qr_scan/qr_scan_page.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
 import 'package:parkeer/widgets/empty_state.dart';
 
@@ -137,7 +137,7 @@ class _ParkingPageState extends State<ParkingPage> {
             onScan: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ScanQrPage()),
+                MaterialPageRoute(builder: (context) => const QrScanPage()),
               );
             },
           ),
