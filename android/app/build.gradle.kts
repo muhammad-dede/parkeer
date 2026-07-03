@@ -23,6 +23,25 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        ndk {
+            abiFilters.addAll(setOf("armeabi-v7a", "arm64-v8a", "x86_64"))
+        }
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            // Konfigurasi debug bawaan Flutter biasanya sudah otomatis ada di sini
+        }
+        
+        // JIKA Anda ingin membuat konfigurasi release tiruan agar tidak error:
+        create("release") {
+            // Untuk sementara, kita gunakan keystore debug bawaan Flutter agar bisa di-build
+            val debugConfig = getByName("debug")
+            storeFile = debugConfig.storeFile
+            storePassword = debugConfig.storePassword
+            keyAlias = debugConfig.keyAlias
+            keyPassword = debugConfig.keyPassword
+        }
     }
 
     buildTypes {
@@ -30,6 +49,21 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+        }
+        getByName("release") {
+            // Mengaktifkan pengecilan kode (minify)
+            isMinifyEnabled = true
+            // Mengaktifkan penghapusan resource yang tidak digunakan
+            isShrinkResources = true 
+            
+            // Cara memanggil file proguard-rules.pro di Kotlin DSL
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            
+            // Pastikan signingConfig Anda sudah benar untuk mode release
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
