@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
 import 'package:parkeer/models/outlet.dart';
 import 'package:parkeer/repositories/outlet_repository.dart';
+import 'package:parkeer/widgets/form_group.dart';
+import 'package:parkeer/widgets/form_label.dart';
+import 'package:parkeer/widgets/form_text_field.dart';
 
 class OutletPage extends StatefulWidget {
   const OutletPage({super.key});
@@ -84,23 +87,6 @@ class _OutletPageState extends State<OutletPage> {
     );
   }
 
-  InputDecoration decoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      border: const OutlineInputBorder(),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-    );
-  }
-
-  Widget label(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
-    );
-  }
-
-  Widget gap() => const SizedBox(height: 20);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,64 +100,80 @@ class _OutletPageState extends State<OutletPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    label("Nama Outlet"),
-                    TextFormField(
-                      controller: _nameController,
-                      textCapitalization: TextCapitalization.words,
-                      textInputAction: TextInputAction.next,
-                      decoration: decoration("Masukkan nama outlet"),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return "Nama outlet wajib diisi";
-                        }
-                        return null;
-                      },
+                    FormGroup(
+                      children: [
+                        FormLabel(title: "Nama Outlet"),
+                        FormTextField(
+                          controller: _nameController,
+                          hintText: "Masukkan nama outlet",
+                          textCapitalization: TextCapitalization.words,
+                          textInputAction: TextInputAction.next,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return "Nama outlet wajib diisi";
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
                     ),
 
-                    gap(),
+                    const SizedBox(height: 16),
 
-                    label("Alamat"),
-                    TextFormField(
-                      controller: _addressController,
-                      maxLines: 3,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: decoration("Masukkan alamat outlet"),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return "Alamat wajib diisi";
-                        }
-                        return null;
-                      },
+                    FormGroup(
+                      children: [
+                        FormLabel(title: "Alamat"),
+                        FormTextField(
+                          controller: _addressController,
+                          maxLines: 3,
+                          hintText: "Masukkan alamat outlet",
+                          textCapitalization: TextCapitalization.sentences,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return "Alamat wajib diisi";
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
                     ),
 
-                    gap(),
+                    const SizedBox(height: 16),
 
-                    label("Nomor Telepon"),
-                    TextFormField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      textInputAction: TextInputAction.next,
-                      decoration: decoration("08123456789"),
+                    FormGroup(
+                      children: [
+                        FormLabel(title: "Nomor Telepon"),
+                        FormTextField(
+                          controller: _phoneController,
+                          hintText: "Masukkan nomor telepon",
+                          keyboardType: TextInputType.phone,
+                          textInputAction: TextInputAction.next,
+                        ),
+                      ],
                     ),
 
-                    gap(),
+                    const SizedBox(height: 16),
 
-                    label("Email"),
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      decoration: decoration("admin@outlet.com"),
-                      validator: (value) {
-                        if (value != null &&
-                            value.isNotEmpty &&
-                            !RegExp(
-                              r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
-                            ).hasMatch(value)) {
-                          return "Format email tidak valid";
-                        }
-                        return null;
-                      },
+                    FormGroup(
+                      children: [
+                        FormLabel(title: "Email"),
+                        FormTextField(
+                          controller: _emailController,
+                          hintText: "Masukkan email",
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          validator: (value) {
+                            if (value != null &&
+                                value.isNotEmpty &&
+                                !RegExp(
+                                  r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                ).hasMatch(value)) {
+                              return "Format email tidak valid";
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
                     ),
 
                     const SizedBox(height: 100),

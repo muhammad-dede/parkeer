@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:parkeer/widgets/section_title.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -108,10 +109,7 @@ class _AboutPageState extends State<AboutPage> {
 
           const SizedBox(height: 20),
 
-          const Text(
-            "Fitur Utama",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
+          SectionTitle(title: "Fitur Utama"),
 
           const SizedBox(height: 12),
 
@@ -141,10 +139,7 @@ class _AboutPageState extends State<AboutPage> {
 
           const SizedBox(height: 20),
 
-          const Text(
-            "Pengembang",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
+          SectionTitle(title: "Pengembang"),
 
           const SizedBox(height: 12),
 

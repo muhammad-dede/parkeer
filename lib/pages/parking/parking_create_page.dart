@@ -10,6 +10,11 @@ import 'package:parkeer/pages/parking/parking_detail_page.dart';
 import 'package:parkeer/pages/parking/widgets/parking_success_bottom_sheet.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
 import 'package:parkeer/pages/printer/printer_page.dart';
+import 'package:parkeer/widgets/form_group.dart';
+import 'package:parkeer/widgets/form_helper_text.dart';
+import 'package:parkeer/widgets/form_text_field.dart';
+import 'package:parkeer/widgets/form_label.dart';
+import 'package:parkeer/widgets/section_title.dart';
 
 class ParkingCreatePage extends StatefulWidget {
   const ParkingCreatePage({super.key});
@@ -199,27 +204,18 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
             children: [
               _infoRateCard(),
               const SizedBox(height: 20),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              FormGroup(
                 children: [
-                  Text(
-                    "Nomor Polisi",
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
+                  FormLabel(title: "Nomor Polisi"),
+                  FormTextField(
                     controller: plateController,
+                    hintText: "Contoh A 1234 AA",
+                    prefixIcon: const Icon(Icons.assignment),
                     textCapitalization: TextCapitalization.characters,
-                    decoration: const InputDecoration(
-                      hintText: "Contoh A 1234 AA",
-                      prefixIcon: Icon(Icons.assignment),
-                    ),
                     validator: _validatePlateNumber,
                   ),
-                  const SizedBox(height: 5),
-                  Text(
-                    "Gunakan spasi untuk pemisah huruf dan angka",
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  FormHelperText(
+                    text: "Gunakan spasi untuk pemisah huruf dan angka",
                   ),
                 ],
               ),
@@ -298,13 +294,7 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: EdgeInsets.only(left: 4),
-          child: const Text(
-            "Ringkasan",
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ),
-        ),
+        SectionTitle(title: "Ringkasan"),
         const SizedBox(height: 8),
         Card(
           shadowColor: Colors.black.withValues(alpha: 0.08),

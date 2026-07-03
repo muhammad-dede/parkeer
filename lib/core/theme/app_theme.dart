@@ -56,8 +56,30 @@ class AppTheme {
       fillColor: Colors.white,
       focusColor: Colors.white,
       hoverColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(vertical: 0),
       hintStyle: TextStyle(color: Colors.grey.shade500),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+
+      prefixIconColor: WidgetStateColor.resolveWith((states) {
+        if (states.contains(WidgetState.error)) {
+          return Colors.red;
+        }
+        if (states.contains(WidgetState.focused)) {
+          return AppColors.primary;
+        }
+        return Colors.grey.shade600;
+      }),
+
+      suffixIconColor: WidgetStateColor.resolveWith((states) {
+        if (states.contains(WidgetState.error)) {
+          return Colors.red;
+        }
+        if (states.contains(WidgetState.focused)) {
+          return AppColors.primary;
+        }
+        return Colors.grey.shade600;
+      }),
+
+      // 1. Border Default & Kondisi Normal
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: BorderSide(color: Colors.grey.shade300),
@@ -66,9 +88,23 @@ class AppTheme {
         borderRadius: BorderRadius.circular(10),
         borderSide: BorderSide(color: Colors.grey.shade300),
       ),
+
+      // 2. Border saat User sedang mengetik (Fokus)
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
+      ),
+
+      // 3. TAMBAHAN BARU: Border saat validasi mendeteksi ERROR (Tetap Rounded 10)
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.red, width: 1.0),
+      ),
+
+      // 4. TAMBAHAN BARU: Border saat ERROR dan User sedang klik field tersebut
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.red, width: 1.4),
       ),
     ),
 

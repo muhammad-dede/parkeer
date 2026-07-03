@@ -3,6 +3,28 @@ import 'package:parkeer/core/constants/app_colors.dart';
 import 'package:parkeer/models/parking_rate.dart';
 import 'package:parkeer/models/parking_rate_detail.dart';
 import 'package:parkeer/repositories/parking_rate_repository.dart';
+import 'package:parkeer/widgets/form_group.dart';
+import 'package:parkeer/widgets/form_helper_text.dart';
+import 'package:parkeer/widgets/form_label.dart';
+import 'package:parkeer/widgets/form_text_field.dart';
+import 'package:parkeer/widgets/section_title.dart';
+
+class _RuleControllers {
+  final TextEditingController _fromController;
+  final TextEditingController _toController;
+  final TextEditingController _priceController;
+
+  _RuleControllers({required int from, required int? to, required int price})
+    : _fromController = TextEditingController(text: from.toString()),
+      _toController = TextEditingController(text: to?.toString() ?? ''),
+      _priceController = TextEditingController(text: price.toString());
+
+  void dispose() {
+    _fromController.dispose();
+    _toController.dispose();
+    _priceController.dispose();
+  }
+}
 
 class ParkingRatePage extends StatefulWidget {
   const ParkingRatePage({super.key});
@@ -21,8 +43,8 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
 
   final List<_RuleControllers> rules = [];
 
-  final minimumController = TextEditingController();
-  final maximumController = TextEditingController();
+  final _minimumController = TextEditingController();
+  final _maximumController = TextEditingController();
 
   @override
   void initState() {
@@ -36,8 +58,8 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
     for (final r in rules) {
       r.dispose();
     }
-    minimumController.dispose();
-    maximumController.dispose();
+    _minimumController.dispose();
+    _maximumController.dispose();
     super.dispose();
   }
 
@@ -67,9 +89,9 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
         );
       }
 
-      minimumController.text = _parkingRate!.minimumCharge.toInt().toString();
+      _minimumController.text = _parkingRate!.minimumCharge.toInt().toString();
 
-      maximumController.text = (_parkingRate!.maximumDailyCharge ?? 0)
+      _maximumController.text = (_parkingRate!.maximumDailyCharge ?? 0)
           .toInt()
           .toString();
 
@@ -85,9 +107,9 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
 
   bool _validate() {
     for (final r in rules) {
-      final from = int.tryParse(r.fromController.text.trim());
-      final price = int.tryParse(r.priceController.text.trim());
-      final toText = r.toController.text.trim();
+      final from = int.tryParse(r._fromController.text.trim());
+      final price = int.tryParse(r._priceController.text.trim());
+      final toText = r._toController.text.trim();
       final to = toText.isEmpty ? null : int.tryParse(toText);
 
       if (from == null || price == null) {
@@ -108,13 +130,13 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
       }
     }
 
-    final minimum = _parseIntOrNull(minimumController.text);
+    final minimum = _parseIntOrNull(_minimumController.text);
     if (minimum == null) {
       _showError('Tarif minimum harus berupa angka.');
       return false;
     }
 
-    final maxText = maximumController.text.trim();
+    final maxText = _maximumController.text.trim();
     if (maxText.isNotEmpty && _parseIntOrNull(maxText) == null) {
       _showError('Tarif maksimal harian harus berupa angka atau dikosongkan.');
       return false;
@@ -124,9 +146,9 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _save() async {
@@ -141,17 +163,17 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
 
     try {
       final updatedRate = _parkingRate!.copyWith(
-        minimumCharge: double.parse(minimumController.text.trim()),
-        maximumDailyCharge: maximumController.text.trim().isEmpty
+        minimumCharge: double.parse(_minimumController.text.trim()),
+        maximumDailyCharge: _maximumController.text.trim().isEmpty
             ? null
-            : double.parse(maximumController.text.trim()),
+            : double.parse(_maximumController.text.trim()),
       );
 
       final details = rules.map((r) {
-        final from = int.parse(r.fromController.text.trim());
-        final toText = r.toController.text.trim();
+        final from = int.parse(r._fromController.text.trim());
+        final toText = r._toController.text.trim();
         final to = toText.isEmpty ? null : int.parse(toText);
-        final price = int.parse(r.priceController.text.trim());
+        final price = int.parse(r._priceController.text.trim());
 
         return ParkingRateDetail(
           parkingRateId: _parkingRate!.id!,
@@ -170,12 +192,9 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
         _saving = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tarif berhasil disimpan.'),
-          backgroundColor: AppColors.primary,
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Tarif berhasil disimpan.')));
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -239,14 +258,7 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
 
                   const SizedBox(height: 20),
 
-                  const Text(
-                    "Aturan Tarif",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  _infoRuleCard(),
+                  SectionTitle(title: "Aturan Tarif"),
 
                   const SizedBox(height: 10),
 
@@ -294,10 +306,7 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
 
                   const SizedBox(height: 24),
 
-                  const Text(
-                    "Pengaturan Tambahan",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+                  SectionTitle(title: 'Pengaturan Tambahan'),
 
                   const SizedBox(height: 10),
 
@@ -308,24 +317,42 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
                     ),
                     child: Padding(
                       padding: EdgeInsetsGeometry.symmetric(
-                        vertical: 10,
-                        horizontal: 14,
+                        vertical: 14,
+                        horizontal: 16,
                       ),
                       child: Column(
                         children: [
-                          _textField(
-                            controller: minimumController,
-                            label: "Tarif Minimum",
-                            helper: "Biaya minimum yang harus dibayarkan.",
+                          FormGroup(
+                            children: [
+                              FormLabel(title: "Tarif Minimum"),
+                              FormTextField(
+                                controller: _minimumController,
+                                prefixText: "Rp ",
+                                hintText: "Masukkan tarif minimum",
+                                keyboardType: TextInputType.number,
+                              ),
+                              FormHelperText(
+                                text: "Biaya minimum yang harus dibayarkan.",
+                              ),
+                            ],
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
-                          _textField(
-                            controller: maximumController,
-                            label: "Maksimal Tarif Harian (Opsional)",
-                            helper:
-                                "Biaya maksimal dalam 24 jam. Kosongkan jika tidak ada batas.",
+                          FormGroup(
+                            children: [
+                              FormLabel(title: "Tarif Minimum"),
+                              FormTextField(
+                                controller: _maximumController,
+                                prefixText: "Rp ",
+                                hintText: "Maksimal Tarif Harian (Opsional)",
+                                keyboardType: TextInputType.number,
+                              ),
+                              FormHelperText(
+                                text:
+                                    "Biaya maksimal dalam 24 jam. Kosongkan jika tidak ada batas.",
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -359,23 +386,6 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
     );
   }
 
-  Widget _infoRuleCard() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.orange.shade50,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: const Row(
-        children: [
-          Icon(Icons.warning, color: Colors.orange),
-          SizedBox(width: 10),
-          Expanded(child: Text("Masukkan jumlah jam dan harga")),
-        ],
-      ),
-    );
-  }
-
   Widget _ruleItem(int index) {
     final rule = rules[index];
 
@@ -388,19 +398,22 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
 
           const SizedBox(width: 8),
 
-          Expanded(child: _smallField(controller: rule.fromController)),
+          Expanded(child: _smallField(controller: rule._fromController)),
 
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 6),
             child: Text("s.d."),
           ),
 
-          Expanded(child: _smallField(controller: rule.toController)),
+          Expanded(child: _smallField(controller: rule._toController)),
 
           const SizedBox(width: 8),
 
           Expanded(
-            child: _smallField(controller: rule.priceController, prefix: "Rp "),
+            child: _smallField(
+              controller: rule._priceController,
+              prefix: "Rp ",
+            ),
           ),
 
           IconButton(
@@ -422,7 +435,7 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
     String? suffix,
     String? prefix,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: TextInputType.number,
       textAlign: TextAlign.center,
@@ -437,43 +450,5 @@ class _ParkingRatePageState extends State<ParkingRatePage> {
         helperMaxLines: 1,
       ),
     );
-  }
-
-  Widget _textField({
-    required TextEditingController controller,
-    required String label,
-    required String helper,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          decoration: InputDecoration(prefixText: " Rp "),
-          keyboardType: TextInputType.number,
-        ),
-        const SizedBox(height: 5),
-        Text(helper, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-      ],
-    );
-  }
-}
-
-class _RuleControllers {
-  final TextEditingController fromController;
-  final TextEditingController toController;
-  final TextEditingController priceController;
-
-  _RuleControllers({required int from, required int? to, required int price})
-    : fromController = TextEditingController(text: from.toString()),
-      toController = TextEditingController(text: to?.toString() ?? ''),
-      priceController = TextEditingController(text: price.toString());
-
-  void dispose() {
-    fromController.dispose();
-    toController.dispose();
-    priceController.dispose();
   }
 }

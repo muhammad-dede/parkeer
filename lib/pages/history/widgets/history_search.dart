@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:parkeer/widgets/form_text_field.dart';
 
 class HistorySearch extends StatelessWidget {
   final ValueChanged<String>? onChanged;
@@ -9,12 +10,10 @@ class HistorySearch extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: TextField(
+      child: FormTextField(
         onChanged: onChanged,
-        decoration: const InputDecoration(
-          hintText: "Cari nomor polisi / tiket...",
-          prefixIcon: Icon(Icons.search),
-        ),
+        hintText: "Cari nomor polisi / tiket...",
+        prefixIcon: const Icon(Icons.search),
       ),
     );
   }
