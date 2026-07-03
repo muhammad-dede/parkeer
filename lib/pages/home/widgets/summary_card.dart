@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:parkeer/widgets/section_title.dart';
 
 class SummaryCard extends StatelessWidget {
   const SummaryCard({
@@ -17,13 +18,7 @@ class SummaryCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: EdgeInsets.only(left: 4),
-          child: const Text(
-            "Ringkasan",
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ),
-        ),
+        SectionTitle(title: "Ringkasan Pendapatan"),
         const SizedBox(height: 8),
         Card(
           shadowColor: Colors.black.withValues(alpha: 0.08),

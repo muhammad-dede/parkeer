@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:parkeer/pages/parking/parking_create_page.dart';
+import 'package:parkeer/widgets/section_title.dart';
 
 class QuickMenu extends StatelessWidget {
   const QuickMenu({
@@ -16,13 +17,7 @@ class QuickMenu extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 4),
-          child: Text(
-            "Menu Cepat",
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ),
-        ),
+        SectionTitle(title: "Menu Cepat"),
         const SizedBox(height: 8),
         GridView.count(
           shrinkWrap: true,

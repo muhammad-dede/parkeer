@@ -5,7 +5,9 @@ class DateTimeUtil {
 
   static const String _locale = 'id_ID';
 
-  static final DateFormat _date = DateFormat('dd MMM yyyy', _locale);
+  static final DateFormat _date = DateFormat('dd MMMM yyyy', _locale);
+
+  static final DateFormat _dateSlash = DateFormat('dd/MM/yyyy', _locale);
 
   static final DateFormat _time = DateFormat('HH:mm', _locale);
 
@@ -32,6 +34,10 @@ class DateTimeUtil {
     return _date.format(dateTime);
   }
 
+  static String dateSlash(DateTime dateTime) {
+    return _dateSlash.format(dateTime);
+  }
+
   static String time(DateTime dateTime) {
     return _time.format(dateTime);
   }
@@ -54,5 +60,20 @@ class DateTimeUtil {
 
   static String timestamp(DateTime dateTime) {
     return _timestamp.format(dateTime);
+  }
+
+  static String dynamicDayDate(DateTime dateTime) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final current = DateTime(dateTime.year, dateTime.month, dateTime.day);
+
+    if (current == today) {
+      return "Hari Ini, ${_date.format(dateTime)}";
+    }
+    if (current == yesterday) {
+      return "Kemarin, ${_date.format(dateTime)}";
+    }
+    return _date.format(dateTime);
   }
 }

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:parkeer/core/events/app_event_bus.dart';
 import 'package:parkeer/core/events/transaction_changed_event.dart';
 import 'package:parkeer/core/utils/date_time_util.dart';
@@ -11,6 +10,9 @@ import 'package:parkeer/pages/history/widgets/history_summary.dart';
 import 'package:parkeer/pages/history/widgets/history_search.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
 import 'package:parkeer/widgets/empty_state.dart';
+import 'package:parkeer/widgets/section_title.dart';
+
+enum HistoryFilter { today, week, month, custom }
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -50,26 +52,6 @@ class _HistoryPageState extends State<HistoryPage> {
 
   DateTime? _startDate;
   DateTime? _endDate;
-
-  String _formatGroupTitle(String date) {
-    final d = DateTime.parse(date);
-    final now = DateTime.now();
-
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-
-    final current = DateTime(d.year, d.month, d.day);
-
-    if (current == today) {
-      return "Hari Ini, ${DateTimeUtil.date(d)}";
-    }
-
-    if (current == yesterday) {
-      return "Kemarin, ${DateTimeUtil.date(d)}";
-    }
-
-    return DateTimeUtil.date(d);
-  }
 
   bool _isSameDate(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
@@ -280,7 +262,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     _selectedFilter == HistoryFilter.custom &&
                             _startDate != null &&
                             _endDate != null
-                        ? "${DateFormat('dd/MM').format(_startDate!)} - ${DateFormat('dd/MM').format(_endDate!)}"
+                        ? "${DateTimeUtil.dateSlash(_startDate!)} - ${DateTimeUtil.dateSlash(_endDate!)}"
                         : "Pilih Tanggal",
                   ),
                   selected: _selectedFilter == HistoryFilter.custom,
@@ -344,24 +326,15 @@ class _HistoryPageState extends State<HistoryPage> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (showHeader)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 12,
-                                  bottom: 8,
-                                ),
-                                child: Text(
-                                  _formatGroupTitle(
-                                    DateFormat(
-                                      'yyyy-MM-dd',
-                                    ).format(history.exitTime!),
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            if (showHeader) ...[
+                              const SizedBox(height: 8),
+                              SectionTitle(
+                                title: DateTimeUtil.dynamicDayDate(
+                                  history.exitTime!,
                                 ),
                               ),
+                              const SizedBox(height: 8),
+                            ],
 
                             InkWell(
                               onTap: () {
@@ -387,5 +360,3 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 }
-
-enum HistoryFilter { today, week, month, custom }

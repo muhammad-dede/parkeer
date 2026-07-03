@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:parkeer/widgets/section_title.dart';
 import 'setting_item.dart';
 
 class SettingMenu {
@@ -20,10 +21,7 @@ class SettingGroup extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-        ),
+        SectionTitle(title: title),
 
         const SizedBox(height: 8),
 
