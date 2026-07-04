@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
+import 'package:parkeer/core/routes/app_routes.dart';
 import 'package:parkeer/core/utils/currency_util.dart';
 import 'package:parkeer/core/utils/date_time_util.dart';
 import 'package:parkeer/models/parking_rate.dart';
 import 'package:parkeer/models/parking_rate_detail.dart';
 import 'package:parkeer/models/parking_transaction.dart';
 import 'package:parkeer/models/parking_transaction_detail.dart';
-import 'package:parkeer/pages/parking/parking_detail_page.dart';
-import 'package:parkeer/pages/parking/widgets/parking_success_bottom_sheet.dart';
+import 'package:parkeer/pages/parking/parking_succes_create_page.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
-import 'package:parkeer/pages/printer/printer_page.dart';
 import 'package:parkeer/widgets/form_group.dart';
 import 'package:parkeer/widgets/form_helper_text.dart';
 import 'package:parkeer/widgets/form_text_field.dart';
@@ -25,6 +24,7 @@ class ParkingCreatePage extends StatefulWidget {
 
 class _ParkingCreatePageState extends State<ParkingCreatePage> {
   final _repository = ParkingTransactionRepository.instance;
+
   ParkingRate? _rate;
   List<ParkingRateDetail> _rateDetails = [];
 
@@ -44,26 +44,19 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
     if (value == null || value.trim().isEmpty) {
       return "Nomor polisi wajib diisi";
     }
-
     final plate = value.trim().toUpperCase();
-
     final regex = RegExp(r'^[A-Z]{1,2}\s\d{1,4}\s[A-Z]{1,3}$');
-
     if (!regex.hasMatch(plate)) {
       return "Format nomor polisi tidak valid.\nContoh: B 1234 ABC";
     }
-
     return null;
   }
 
   @override
   void initState() {
     super.initState();
-
     entryTime = DateTime.now();
-
     ticketNumber = 'PKR${DateTimeUtil.timestamp(entryTime)}';
-
     _loadRate();
   }
 
@@ -75,15 +68,11 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
 
   Future<void> _loadRate() async {
     final rate = await _repository.getActiveRate(vehicleType);
-
     if (rate == null) {
       return;
     }
-
     final details = await _repository.getRateDetails(rate.id!);
-
     if (!mounted) return;
-
     setState(() {
       _rate = rate;
       _rateDetails = details;
@@ -92,23 +81,19 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
 
   Future<void> _save() async {
     if (_saving) return;
-
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
+    if (!_formKey.currentState!.validate()) return;
     if (_rate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Tarif parkir belum diatur")),
       );
       return;
     }
-
     setState(() {
       _saving = true;
     });
-
     try {
+      FocusScope.of(context).unfocus();
+      await Future.delayed(const Duration(milliseconds: 200));
       final transaction = ParkingTransaction(
         ticketNumber: ticketNumber,
         plateNumber: plateController.text.trim().toUpperCase(),
@@ -120,9 +105,7 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
         totalFee: 0,
         status: "IN",
       );
-
       final transactionId = await _repository.createTransaction(transaction);
-
       final detailSnapshots = _rateDetails.map((e) {
         return ParkingTransactionDetail(
           parkingTransactionId: transactionId,
@@ -131,56 +114,13 @@ class _ParkingCreatePageState extends State<ParkingCreatePage> {
           price: e.price,
         );
       }).toList();
-
       await _repository.createTransactionDetails(detailSnapshots);
-
       if (!mounted) return;
-
-      await showModalBottomSheet<bool>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: false,
-        enableDrag: false,
-        isDismissible: false,
-        showDragHandle: false,
-        backgroundColor: Colors.transparent,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        builder: (sheetContext) {
-          final sheetNavigator = Navigator.of(sheetContext);
-          final navigator = Navigator.of(context);
-
-          return ParkingSuccessBottomSheet(
-            transactionId: transactionId,
-            ticketNumber: ticketNumber,
-            plateNumber: plateController.text.trim().toUpperCase(),
-            entryTime: entryTime,
-            onPrintNota: () async {
-              sheetNavigator.pop();
-              final result = await navigator.push<bool>(
-                MaterialPageRoute(
-                  builder: (_) => PrinterPage(transactionId: transactionId),
-                ),
-              );
-              if (!mounted) return;
-              navigator.pop(result ?? true);
-            },
-            onBackToList: () {
-              Navigator.of(sheetContext).pop();
-              Navigator.of(context).pop(true);
-            },
-            onViewDetail: () async {
-              sheetNavigator.pop();
-              final result = await navigator.push<bool>(
-                MaterialPageRoute(
-                  builder: (_) =>
-                      ParkingDetailPage(transactionId: transactionId),
-                ),
-              );
-              if (!mounted) return;
-              navigator.pop(result ?? true);
-            },
-          );
-        },
+      await Navigator.pushReplacement(
+        context,
+        AppRoutes.successTransition(
+          ParkingSuccessCreatePage(transactionId: transactionId),
+        ),
       );
     } finally {
       if (mounted) {

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
+import 'package:parkeer/core/services/printer_service.dart';
 import 'package:parkeer/core/utils/currency_util.dart';
 import 'package:parkeer/core/utils/date_time_util.dart';
+import 'package:parkeer/models/outlet.dart';
 import 'package:parkeer/models/parking_transaction.dart';
+import 'package:parkeer/repositories/outlet_repository.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
-import 'package:parkeer/pages/printer/printer_page.dart';
 
 class HistoryDetailPage extends StatefulWidget {
   const HistoryDetailPage({super.key, required this.transactionId});
@@ -17,28 +19,29 @@ class HistoryDetailPage extends StatefulWidget {
 
 class _HistoryDetailPageState extends State<HistoryDetailPage> {
   final _repository = ParkingTransactionRepository.instance;
+  final _outletRepository = OutletRepository();
+
+  Outlet _outlet = Outlet.empty();
+  ParkingTransaction? _transaction;
+  bool _loading = true;
+  bool _isPrinting = false;
 
   String formatDuration(DateTime entryTime, {DateTime? exitTime}) {
     final endTime = exitTime ?? DateTime.now();
-
     final duration = endTime.difference(entryTime);
-
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
     final seconds = duration.inSeconds.remainder(60);
-
     return '${hours.toString().padLeft(2, '0')}:'
         '${minutes.toString().padLeft(2, '0')}:'
         '${seconds.toString().padLeft(2, '0')}';
   }
 
-  ParkingTransaction? _transaction;
-  bool _loading = true;
-
   @override
   void initState() {
     super.initState();
     _loadTransaction();
+    _loadOutlet();
   }
 
   Future<void> _loadTransaction() async {
@@ -60,7 +63,30 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
       _transaction = transaction;
       _loading = false;
     });
-    // debugPrint(_transaction?.toMap().toString());
+  }
+
+  Future<void> _loadOutlet() async {
+    final outlet = await _outletRepository.get();
+    if (!mounted) return;
+    setState(() => _outlet = outlet);
+  }
+
+  Future<void> _actionPrint({bool forcePick = false}) async {
+    setState(() => _isPrinting = true);
+    try {
+      final receiptBytes = PrinterService.generateParkingReceiptBytes(
+        transaction: _transaction!,
+        outlet: _outlet,
+      );
+      await PrinterService.printReceipt(
+        context: context,
+        bytes: receiptBytes,
+        forcePickDevice: forcePick,
+      );
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _isPrinting = false);
+    }
   }
 
   @override
@@ -107,17 +133,15 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
                 width: double.infinity,
                 height: 52,
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            PrinterPage(transactionId: widget.transactionId),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.print),
-                  label: const Text("Cetak Nota"),
+                  onPressed: _isPrinting ? null : () => _actionPrint(),
+                  icon: _isPrinting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.print),
+                  label: Text(_isPrinting ? "Mencetak..." : "Cetak Nota"),
                 ),
               ),
             ],

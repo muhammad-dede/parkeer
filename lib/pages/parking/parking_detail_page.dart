@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:parkeer/core/constants/app_colors.dart';
+import 'package:parkeer/core/services/printer_service.dart';
 import 'package:parkeer/core/utils/currency_util.dart';
 import 'package:parkeer/core/utils/date_time_util.dart';
+import 'package:parkeer/models/outlet.dart';
 import 'package:parkeer/models/parking_transaction.dart';
+import 'package:parkeer/repositories/outlet_repository.dart';
 import 'package:parkeer/repositories/parking_transaction_repository.dart';
-import 'package:parkeer/pages/printer/printer_page.dart';
 
 class ParkingDetailPage extends StatefulWidget {
   const ParkingDetailPage({super.key, required this.transactionId});
@@ -17,60 +19,55 @@ class ParkingDetailPage extends StatefulWidget {
 
 class _ParkingDetailPageState extends State<ParkingDetailPage> {
   final _repository = ParkingTransactionRepository.instance;
+  final _outletRepository = OutletRepository();
 
-  String formatDuration(DateTime entryTime, {DateTime? exitTime}) {
-    final endTime = exitTime ?? DateTime.now();
-
-    final duration = endTime.difference(entryTime);
-
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
-
-    return '${hours.toString().padLeft(2, '0')}:'
-        '${minutes.toString().padLeft(2, '0')}:'
-        '${seconds.toString().padLeft(2, '0')}';
-  }
-
+  Outlet _outlet = Outlet.empty();
   ParkingTransaction? _transaction;
   bool _loading = true;
   bool _isActive = false;
   double _parkingFee = 0;
   DateTime _exitTime = DateTime.now();
   bool _hasChanged = false;
+  bool _isPrinting = false;
+
+  String formatDuration(DateTime entryTime, {DateTime? exitTime}) {
+    final endTime = exitTime ?? DateTime.now();
+    final duration = endTime.difference(entryTime);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+    return '${hours.toString().padLeft(2, '0')}:'
+        '${minutes.toString().padLeft(2, '0')}:'
+        '${seconds.toString().padLeft(2, '0')}';
+  }
 
   @override
   void initState() {
     super.initState();
     _loadTransaction();
+    _loadOutlet();
   }
 
   Future<void> _loadTransaction() async {
     setState(() => _loading = true);
-
     final transaction = await _repository.getTransactionById(
       widget.transactionId,
     );
-
     if (transaction == null) {
       if (!mounted) return;
       Navigator.pop(context);
       return;
     }
-
     final exitTime = transaction.status == 'OUT'
         ? transaction.exitTime!
         : DateTime.now();
-
     final parkingFee = transaction.status == 'OUT'
         ? transaction.totalFee
         : await _repository.calculateParkingFee(
             transactionId: widget.transactionId,
             exitTime: exitTime,
           );
-
     if (!mounted) return;
-
     setState(() {
       _transaction = transaction;
       _parkingFee = parkingFee;
@@ -78,7 +75,30 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
       _isActive = transaction.status == 'IN';
       _loading = false;
     });
-    // debugPrint(_transaction?.toMap().toString());
+  }
+
+  Future<void> _loadOutlet() async {
+    final outlet = await _outletRepository.get();
+    if (!mounted) return;
+    setState(() => _outlet = outlet);
+  }
+
+  Future<void> _actionPrint({bool forcePick = false}) async {
+    setState(() => _isPrinting = true);
+    try {
+      final receiptBytes = PrinterService.generateParkingReceiptBytes(
+        transaction: _transaction!,
+        outlet: _outlet,
+      );
+      await PrinterService.printReceipt(
+        context: context,
+        bytes: receiptBytes,
+        forcePickDevice: forcePick,
+      );
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _isPrinting = false);
+    }
   }
 
   Future<void> _showCompleteTransaction() async {
@@ -104,22 +124,16 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
         );
       },
     );
-
     if (confirm != true) return;
-
     await _repository.completeTransaction(
       transactionId: widget.transactionId,
       exitTime: _exitTime,
       totalFee: _parkingFee.toInt(),
     );
-
     if (!mounted) return;
-
     _hasChanged = true;
     await _loadTransaction();
-
     if (!mounted) return;
-
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Transaksi parkir berhasil diselesaikan.")),
     );
@@ -146,17 +160,12 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
         );
       },
     );
-
     if (confirm != true) return;
-
     await _repository.deleteTransaction(widget.transactionId);
-
     if (!mounted) return;
-
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Transaksi parkir berhasil dihapus.")),
     );
-
     Navigator.pop(context, true);
   }
 
@@ -166,7 +175,6 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-
         Navigator.pop(context, _hasChanged);
       },
       child: Scaffold(
@@ -178,15 +186,10 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
                 child: Column(
                   children: [
                     _headerCard(),
-
                     const SizedBox(height: 16),
-
                     _informationCard(),
-
                     const SizedBox(height: 16),
-
                     _feeCard(),
-
                     const SizedBox(height: 30),
                   ],
                 ),
@@ -211,17 +214,15 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
                   width: double.infinity,
                   height: 52,
                   child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              PrinterPage(transactionId: widget.transactionId),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.print),
-                    label: const Text("Cetak Nota"),
+                    onPressed: _isPrinting ? null : () => _actionPrint(),
+                    icon: _isPrinting
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.print),
+                    label: Text(_isPrinting ? "Mencetak..." : "Cetak Nota"),
                   ),
                 ),
 
@@ -242,9 +243,7 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 12),
-
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -292,25 +291,25 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
               size: 28,
             ),
           ),
-
           const SizedBox(width: 14),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   transaction.plateNumber,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   transaction.ticketNumber,
-                  style: TextStyle(color: Colors.black),
+                  style: const TextStyle(color: Colors.black),
                 ),
               ],
             ),
           ),
-
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
             decoration: BoxDecoration(
@@ -319,7 +318,7 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
             ),
             child: Text(
               transaction.status == 'IN' ? "Aktif" : 'Selesai',
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.primary,
                 fontWeight: FontWeight.bold,
               ),
@@ -379,7 +378,7 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
         children: [
           Text(
             _isActive ? "Estimasi Biaya" : "Total Bayar",
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColors.primary,
               fontWeight: FontWeight.w600,
             ),
@@ -387,7 +386,7 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
           const SizedBox(height: 8),
           Text(
             CurrencyUtil.format(_parkingFee),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.bold,
               color: AppColors.primary,
